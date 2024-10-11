@@ -5,9 +5,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.fajri.prioriti.data.dao.TaskDao
-import com.fajri.prioriti.data.model.TaskEntity
+import com.fajri.prioriti.data.model.Task
 
-@Database(entities = [TaskEntity::class], version = 1)
+@Database(entities = [Task::class], version = 1)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun taskDao(): TaskDao
 
