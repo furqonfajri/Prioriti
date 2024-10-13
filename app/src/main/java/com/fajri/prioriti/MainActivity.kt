@@ -8,7 +8,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.fajri.prioriti.databinding.ActivityMainBinding
+import com.fajri.prioriti.databinding.BottomSheetAddTaskBinding
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.timepicker.MaterialTimePicker
 import java.text.ParseException
 import java.text.ParsePosition
 import java.text.SimpleDateFormat
@@ -22,7 +25,10 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
         private val TAG = "MainActivity"
     }
     private lateinit var binding: ActivityMainBinding
+    private lateinit var bottomBinding: BottomSheetAddTaskBinding
+
     private val sdf = SimpleDateFormat("MMMM yyyy", Locale.ENGLISH)
+    private val sdfb = SimpleDateFormat("dd MMMM yyyy", Locale.ENGLISH)
     private val cal = Calendar.getInstance(Locale.ENGLISH)
     private var mStartD: Date? = null
 
@@ -33,6 +39,7 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
         super.onCreate(savedInstanceState)
 //        enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
+
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -42,6 +49,7 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
 
         init()
         initCalendar()
+
     }
 
     private fun init() {
@@ -52,6 +60,9 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
             monthYearPicker.setOnClickListener {
                 displayDatePicker()
             }
+            fabAdd.setOnClickListener {
+                showBottoSheetDialog()
+            }
         }
     }
 
@@ -61,25 +72,57 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
         getDates()
     }
 
-    private fun displayDatePicker() {
+    private fun displayDatePicker(isBottomSheets: Boolean = false) {
         val materialDateBuilder: MaterialDatePicker.Builder<Long> =
             MaterialDatePicker.Builder.datePicker()
         materialDateBuilder.setTitleText("Select Date")
         val materialDatePicker = materialDateBuilder.build()
         materialDatePicker.show(supportFragmentManager, "MATERIAL_DATE_PICKER")
         materialDatePicker.addOnPositiveButtonClickListener {
-            try {
-                mStartD = Date(it)
-                binding.monthYearPicker.text = sdf.format(it)
-                cal.time = Date(it)
-
-                getDates()
+            if (isBottomSheets) {
+                try {
+                    bottomBinding.datePicker.text = sdfb.format(it)
 
 
-            }catch (e: ParseException) {
-                Log.e(TAG, "displayDatePicker: ${e.message}")
+                } catch (e: ParseException) {
+                    Log.e(TAG, "displayDatePicker: ${e.message}")
+                }
+            } else {
+                try {
+                    mStartD = Date(it)
+                    binding.monthYearPicker.text = sdf.format(it)
+                    cal.time = Date(it)
+
+                    getDates()
+
+
+                } catch (e: ParseException) {
+                    Log.e(TAG, "displayDatePicker: ${e.message}")
+                }
             }
         }
+    }
+
+    private fun displayTimePicker() {
+        val materialTimeBuilder: MaterialTimePicker.Builder = MaterialTimePicker.Builder()
+        materialTimeBuilder.setTitleText("Select Time")
+        val materialTimePicker = materialTimeBuilder.build()
+        materialTimePicker.show(supportFragmentManager, "MATERIAL_TIME_PICKER")
+
+        materialTimePicker.addOnPositiveButtonClickListener {
+            val selectedHour = materialTimePicker.hour
+            val selectedMinute = materialTimePicker.minute
+
+            try {
+                // Format waktu yang dipilih dan update ke TextView di Bottom Sheet
+                val timeFormatted = String.format("%02d:%02d", selectedHour, selectedMinute)
+                bottomBinding.timePicker.text = timeFormatted
+
+            } catch (e: Exception) {
+                Log.e(TAG, "displayTimePicker: ${e.message}")
+            }
+        }
+
     }
 
     private fun getDates() {
@@ -106,10 +149,32 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
         }
     }
 
+    private fun showBottoSheetDialog() {
+        val bottomSheetDialog = BottomSheetDialog(this)
+        bottomBinding = BottomSheetAddTaskBinding.inflate(layoutInflater)
+        bottomSheetDialog.setContentView(bottomBinding.root)
+
+        bottomBinding.datePicker.text = sdfb.format(cal.time)
+
+        bottomBinding.datePicker.setOnClickListener{
+            displayDatePicker(isBottomSheets = true)
+        }
+
+        bottomBinding.timePicker.setOnClickListener{
+            displayTimePicker()
+        }
+
+        bottomSheetDialog.show()
+
+    }
+
     override fun onSelect(calendarData: CalendarData, position: Int, day: TextView) {
         calendarList.forEachIndexed { index, calendarData ->
             calendarData.isSelected = index == position
         }
+
+        cal.time = calendarData.data
+
         calendarAdapter.updateList(calendarList)
     }
 }
