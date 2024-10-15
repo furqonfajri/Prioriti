@@ -3,12 +3,19 @@ package com.fajri.prioriti
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
+import com.fajri.prioriti.data.local.AppDatabase
+import com.fajri.prioriti.data.model.Task
+import com.fajri.prioriti.data.repository.TaskRepository
 import com.fajri.prioriti.databinding.ActivityMainBinding
 import com.fajri.prioriti.databinding.BottomSheetAddTaskBinding
+import com.fajri.prioriti.viewmodel.TaskViewModel
+import com.fajri.prioriti.viewmodel.TaskViewModelFactory
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -26,6 +33,8 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
     }
     private lateinit var binding: ActivityMainBinding
     private lateinit var bottomBinding: BottomSheetAddTaskBinding
+
+    private lateinit var taskViewModel: TaskViewModel
 
     private val sdf = SimpleDateFormat("MMMM yyyy", Locale.ENGLISH)
     private val sdfb = SimpleDateFormat("dd MMMM yyyy", Locale.ENGLISH)
@@ -49,6 +58,12 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
 
         init()
         initCalendar()
+
+        val taskDao = AppDatabase.getInstance(this).taskDao()
+        val repository = TaskRepository(taskDao)
+
+        val factory = TaskViewModelFactory(repository)
+        taskViewModel = ViewModelProvider(this, factory).get(TaskViewModel::class.java)
 
     }
 
@@ -164,8 +179,50 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
             displayTimePicker()
         }
 
+        bottomBinding.btnAddTask.setOnClickListener{
+            val dateText = bottomBinding.datePicker.text.toString()
+            val timeText = bottomBinding.timePicker.text.toString()
+            val task = bottomBinding.edtTask.text.toString()
+            val description = bottomBinding.edtDescription.text.toString()
+            val priority = when {
+                bottomBinding.rbLow.isChecked -> "Low"
+                bottomBinding.rbMedium.isChecked -> "Medium"
+                bottomBinding.rbHigh.isChecked -> "High"
+                else -> ""
+            }
+
+            if (dateText.isEmpty() || timeText.isEmpty() || task.isEmpty() || description.isEmpty() || priority == "" ) {
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+            } else {
+                saveTask(dateText, timeText, task, description, priority)
+                bottomSheetDialog.dismiss()
+            }
+
+
+
+        }
+
         bottomSheetDialog.show()
 
+    }
+
+    private fun saveTask(dateText: String, timeText: String, task: String, description: String, priority: String ) {
+        val timestamp = convertToTimestamp(dateText, timeText)
+        val newTask = Task(
+            title = task,
+            description = description,
+            priority = priority,
+            timestamp = timestamp,
+            isCompleted = false
+        )
+
+        taskViewModel.insertTask(newTask)
+    }
+
+    private fun convertToTimestamp(dateText: String, timeText: String): Long {
+        val format = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.ENGLISH)
+        val dateTimeString = "$dateText, $timeText"
+        return format.parse(dateTimeString)?.time ?: 0L
     }
 
     override fun onSelect(calendarData: CalendarData, position: Int, day: TextView) {
@@ -177,4 +234,6 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
 
         calendarAdapter.updateList(calendarList)
     }
+
+
 }

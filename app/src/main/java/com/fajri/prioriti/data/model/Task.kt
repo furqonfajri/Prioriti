@@ -8,7 +8,7 @@ data class Task(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
     val description: String,
-    val priority: Byte,
+    val priority: String,
     val timestamp: Long,
     val isCompleted: Boolean,
 )
