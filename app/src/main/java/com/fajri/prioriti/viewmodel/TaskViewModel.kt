@@ -30,4 +30,8 @@ class TaskViewModel(private val repository: TaskRepository): ViewModel() {
     fun getTasks(): LiveData<List<Task>> {
             return repository.getTasks()
     }
+
+    fun getTaskByDate(startOfDay: Long, endOfDay: Long): LiveData<List<Task>> {
+        return repository.getTaskByDate(startOfDay, endOfDay)
+    }
 }

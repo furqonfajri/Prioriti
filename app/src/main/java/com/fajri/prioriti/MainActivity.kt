@@ -8,6 +8,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.fajri.prioriti.data.local.AppDatabase
 import com.fajri.prioriti.data.model.Task
@@ -44,6 +47,10 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
     private val calendarAdapter = CalendarAdapter(this, arrayListOf())
     private val calendarList = ArrayList<CalendarData>()
 
+    private val taskAdapter = TaskAdapter(emptyList())
+
+    private var selectedDate: Date = Date()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        enableEdgeToEdge()
@@ -64,6 +71,11 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
 
         val factory = TaskViewModelFactory(repository)
         taskViewModel = ViewModelProvider(this, factory).get(TaskViewModel::class.java)
+
+
+        binding.taskView.adapter = taskAdapter
+
+        updateTaskListForSelectedDate()
 
     }
 
@@ -191,7 +203,7 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
                 else -> ""
             }
 
-            if (dateText.isEmpty() || timeText.isEmpty() || task.isEmpty() || description.isEmpty() || priority == "" ) {
+            if (dateText.isEmpty() || timeText.isEmpty() || task.isEmpty() || description.isEmpty() || priority == "" || timeText == "Set Time" ) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
             } else {
                 saveTask(dateText, timeText, task, description, priority)
@@ -217,6 +229,8 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
         )
 
         taskViewModel.insertTask(newTask)
+
+        updateTaskListForSelectedDate()
     }
 
     private fun convertToTimestamp(dateText: String, timeText: String): Long {
@@ -225,12 +239,54 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
         return format.parse(dateTimeString)?.time ?: 0L
     }
 
-    override fun onSelect(calendarData: CalendarData, position: Int, day: TextView) {
-        calendarList.forEachIndexed { index, calendarData ->
-            calendarData.isSelected = index == position
+    private fun updateTaskListForSelectedDate() {
+
+        val calStart = Calendar.getInstance().apply {
+            time = selectedDate
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
         }
 
-        cal.time = calendarData.data
+        val calEnd = Calendar.getInstance().apply {
+            time = selectedDate
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }
+
+        Log.d("SELECTED DATE", "${sdfb.format(calStart.timeInMillis)} - ${sdfb.format(calEnd.timeInMillis)}")
+
+
+        taskViewModel.getTaskByDate(calStart.timeInMillis, calEnd.timeInMillis).observeOnce(this) { tasks ->
+            Log.d("TASK LIST", tasks.toString())
+            taskAdapter.updateTasks(tasks)
+        }
+
+    }
+
+    fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
+        observe(lifecycleOwner, object : Observer<T> {
+            override fun onChanged(value: T) {
+                observer.onChanged(value)
+                removeObserver(this)
+            }
+        })
+    }
+
+    override fun onSelect(calendarData: CalendarData, position: Int, day: TextView) {
+        calendarList.forEachIndexed { index, calendarDatas ->
+            calendarDatas.isSelected = index == position
+        }
+
+        selectedDate = calendarData.data
+        cal.time = selectedDate
+
+
+        updateTaskListForSelectedDate()
+
 
         calendarAdapter.updateList(calendarList)
     }

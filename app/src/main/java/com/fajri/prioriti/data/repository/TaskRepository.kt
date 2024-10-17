@@ -13,6 +13,10 @@ class TaskRepository (private val taskDao: TaskDao){
         return taskDao.getAllTasks()
     }
 
+    fun getTaskByDate(startOfDay: Long, endOfDay: Long): LiveData<List<Task>> {
+        return taskDao.getTaskByDate(startOfDay, endOfDay)
+    }
+
     suspend fun deleteTask(task: Task) {
         taskDao.deleteTask(task)
     }
