@@ -17,8 +17,11 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE timestamp BETWEEN :startOfday AND :endOfDay")
     fun getTaskByDate(startOfday: Long, endOfDay: Long): LiveData<List<Task>>
 
+    @Query("SELECT * FROM tasks WHERE timestamp > :currentTime")
+    fun getTaskAfter(currentTime: Long): List<Task>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTask(task: Task)
+    suspend fun insertTask(task: Task): Long
 
     @Delete
     suspend fun deleteTask(task: Task)

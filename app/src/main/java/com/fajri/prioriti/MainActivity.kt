@@ -1,17 +1,34 @@
 package com.fajri.prioriti
 
+import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.fajri.prioriti.data.local.AppDatabase
 import com.fajri.prioriti.data.model.Task
 import com.fajri.prioriti.data.repository.TaskRepository
@@ -28,11 +45,13 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
 
     companion object {
         private val TAG = "MainActivity"
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
     }
     private lateinit var binding: ActivityMainBinding
     private lateinit var bottomBinding: BottomSheetAddTaskBinding
@@ -51,6 +70,9 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
 
     private var selectedDate: Date = Date()
 
+    private lateinit var alarmHandler: AlarmHandler
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        enableEdgeToEdge()
@@ -63,8 +85,13 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
             insets
         }
 
+        requestNotificationPermission()
+
         init()
         initCalendar()
+//        createNotificationChannel()
+
+        alarmHandler = AlarmHandler(this)
 
         val taskDao = AppDatabase.getInstance(this).taskDao()
         val repository = TaskRepository(taskDao)
@@ -228,9 +255,12 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
             isCompleted = false
         )
 
-        taskViewModel.insertTask(newTask)
+        taskViewModel.insertTask(newTask).observeOnce(this) { id ->
+            val savedTask = newTask.copy(id = id.toInt())
+            updateTaskListForSelectedDate()
+            setAlarm(savedTask)
+        }
 
-        updateTaskListForSelectedDate()
     }
 
     private fun convertToTimestamp(dateText: String, timeText: String): Long {
@@ -266,6 +296,104 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
         }
 
     }
+
+//    @SuppressLint("ScheduleExactAlarm")
+    private fun setAlarm(task: Task) {
+//        val workManager = WorkManager.getInstance(this)
+//
+//        val data = workDataOf(
+//            "title" to task.title,
+//            "description" to task.description
+//        )
+//
+//        val notificationWorkRequest = OneTimeWorkRequestBuilder<TaskReminderWorker>()
+//            .setInputData(data)
+//            .setInitialDelay(getDelay(task.timestamp), TimeUnit.MILLISECONDS)
+//            .build()
+//
+//        workManager.enqueue(notificationWorkRequest)
+
+//        val context = this
+//
+//        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+//        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//
+//        val intent = Intent(context, NotificationReceiver::class.java).apply {
+//            putExtra("title", task.title)
+//            putExtra("description", task.description)
+//        }
+//        val pendingIntent1 = PendingIntent.getBroadcast(context, System.currentTimeMillis().toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+//        val pendingIntent2 = PendingIntent.getBroadcast(context, (System.currentTimeMillis() + 1).toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+//
+//        val alarmTime = task.timestamp
+
+        when(task.priority) {
+            "Low" -> {
+                alarmHandler.scheduleAlarm(task, isJustNotification = true)
+            }
+            "Medium" -> {
+                alarmHandler.scheduleAlarm(task)
+            }
+            "High" -> {
+                alarmHandler.scheduleAlarm(task)
+                alarmHandler.scheduleAlarm(task, offsetMillis = 60_000)
+            }
+        }
+    }
+
+//    private fun getDelay(timestamp: Long): Long {
+//        val currentTime = System.currentTimeMillis()
+//        return if (timestamp > currentTime) {
+//            timestamp - currentTime
+//        } else {
+//            0
+//        }
+//    }
+
+//    private fun createNotificationChannel() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            val channel = NotificationChannel(
+//                "TASK_NOTIFICATION_CHANNEL",
+//                "Task Notifications",
+//                NotificationManager.IMPORTANCE_HIGH
+//            )
+//            val notificationManager = getSystemService(NotificationManager::class.java)
+//            notificationManager.createNotificationChannel(channel)
+//        }
+//    }
+
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
+
+//    private fun sendNotification(notificationManager: NotificationManager, task: Task) {
+//        val channelId = "TASK_NOTIFICATION_CHANNEL"
+//        val notificationBuilder = NotificationCompat.Builder(this, channelId)
+//            .setSmallIcon(R.drawable.ic_check_circle)
+//            .setContentTitle(task.title)
+//            .setContentText(task.description)
+//            .setPriority(NotificationCompat.PRIORITY_HIGH)
+//
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            val channel = NotificationChannel(channelId, "Task Notifications", NotificationManager.IMPORTANCE_HIGH)
+//            notificationManager.createNotificationChannel(channel)
+//        }
+//
+//        notificationManager.notify(task.id, notificationBuilder.build())
+//    }
 
     fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
         observe(lifecycleOwner, object : Observer<T> {

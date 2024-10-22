@@ -5,8 +5,8 @@ import com.fajri.prioriti.data.dao.TaskDao
 import com.fajri.prioriti.data.model.Task
 
 class TaskRepository (private val taskDao: TaskDao){
-    suspend fun insertTask(task: Task) {
-        taskDao.insertTask(task)
+    suspend fun insertTask(task: Task): Long {
+        return taskDao.insertTask(task)
     }
 
     fun getTasks(): LiveData<List<Task>> {

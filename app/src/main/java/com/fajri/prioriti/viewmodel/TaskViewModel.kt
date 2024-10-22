@@ -1,6 +1,7 @@
 package com.fajri.prioriti.viewmodel
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajri.prioriti.data.model.Task
@@ -9,10 +10,13 @@ import kotlinx.coroutines.launch
 
 class TaskViewModel(private val repository: TaskRepository): ViewModel() {
 
-    fun insertTask(task: Task) {
+    fun insertTask(task: Task): LiveData<Long> {
+        val liveData = MutableLiveData<Long>()
         viewModelScope.launch {
-            repository.insertTask(task)
+            val id = repository.insertTask(task)
+            liveData.postValue(id)
         }
+        return liveData
     }
 
     fun updateTask(task: Task) {
