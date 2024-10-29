@@ -3,4 +3,23 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="blue">#0E1F7C</color>
+
+    <color name="light_slate_blue">#9db2cd</color>
+    <color name="soft_white">#f7f7f7</color>
+    <color name="muted_slate_blue">#8d9db3</color>
+    <color name="pale_slate_blue">#b9c4d1</color>
+    <color name="deep_blue">#1149d4</color>
+    <color name="neutral_gray">#868693</color>
+    <color name="dark_charcoal">#636161</color>
+    <color name="bright_azure">#427cde</color>
+
+    <color name="primary_background">#FFFFFFFF</color>
+    <color name="secondary_background">#f7f7f7</color>
+    <color name="primary_text">#FF000000</color>
+    <color name="secondary_text">#427cde</color>
+    <color name="third_text">#FFFFFFFF</color>
+
+    <color name="calendar_primary">#427cde</color>
+    <color name="calendar_secondary">#FFFFFFFF</color>
+
 </resources>

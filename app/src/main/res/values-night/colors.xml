@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_background">#636161</color>
+    <color name="secondary_background">#494848</color>
+    <color name="primary_text">#FFFFFFFF</color>
+    <color name="secondary_text">#FFFFFFFF</color>
+    <color name="third_text">#427cde</color>
+
+    <color name="calendar_primary">#FFFFFFFF</color>
+    <color name="calendar_secondary">#868693</color>
+</resources>

@@ -1,11 +1,12 @@
-package com.fajri.prioriti
+package com.fajri.prioriti.adapter
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.fajri.prioriti.R
+import com.fajri.prioriti.data.model.CalendarData
 import com.fajri.prioriti.databinding.DateItemBinding
 
 class CalendarAdapter(
@@ -39,18 +40,18 @@ class CalendarAdapter(
             if (calendarDataModel.isSelected) {
                 pos = -1
                 calendarDay.setTextColor(
-                    ContextCompat.getColor(itemView.context, R.color.white)
+                    ContextCompat.getColor(itemView.context, R.color.third_text)
                 )
                 calendarDate.setTextColor(
                     ContextCompat.getColor(
                         itemView.context,
-                        R.color.white
+                        R.color.third_text
                     )
                 )
                 cardView.setCardBackgroundColor(
                     ContextCompat.getColor(
                         itemView.context,
-                        R.color.blue
+                        R.color.calendar_primary
                     )
                 )
 
@@ -58,20 +59,20 @@ class CalendarAdapter(
                 calendarDay.setTextColor(
                     ContextCompat.getColor(
                         itemView.context,
-                        R.color.blue
+                        R.color.secondary_text
                     )
                 )
 
                 calendarDate.setTextColor(
                     ContextCompat.getColor(
                         itemView.context,
-                        R.color.blue
+                        R.color.secondary_text
                     )
                 )
                 cardView.setCardBackgroundColor(
                     ContextCompat.getColor(
                         itemView.context,
-                        R.color.white
+                        R.color.calendar_secondary
                     )
                 )
 

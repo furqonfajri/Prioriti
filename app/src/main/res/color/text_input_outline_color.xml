@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Color ketika input aktif -->
+    <item android:color="@color/calendar_primary" android:state_focused="true"/>
+    <!-- Color ketika input tidak aktif -->
+    <item android:color="@color/primary_text"/>
+</selector>

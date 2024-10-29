@@ -2,6 +2,29 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Prioriti" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+         <item name="colorPrimary">@color/primary_background</item>
     </style>
+
+    <style name="CustomTimePickerTheme" parent="ThemeOverlay.MaterialComponents.TimePicker">
+        <!-- Warna utama untuk TimePicker -->
+        <item name="colorPrimary">@color/primary_text</item>
+        <item name="colorOnPrimary">@color/primary_background</item>
+        <item name="colorSurface">@color/primary_background</item>
+    </style>
+
+    <style name="CustomDatePickerTheme" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+
+        <item name="colorPrimary">@color/primary_text</item>
+        <item name="colorOnPrimary">@color/primary_background</item>
+        <item name="colorSurface">@color/primary_background</item>
+        <item name="colorPrimaryVariant">@color/primary_background</item>
+    </style>
+
+    <style name="CustomTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/text_input_outline_color</item>
+        <item name="hintTextColor">@color/secondary_text</item>
+        <item name="android:textColorHint">@color/primary_text</item>
+    </style>
+
+
 </resources>

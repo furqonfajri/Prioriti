@@ -1,4 +1,4 @@
-package com.fajri.prioriti
+package com.fajri.prioriti.data.model
 
 import java.text.SimpleDateFormat
 import java.util.Calendar

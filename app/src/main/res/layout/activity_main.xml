@@ -5,7 +5,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="@color/primary_background"
+    tools:context=".ui.MainActivity">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -33,14 +34,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/icon" />
+                        android:src="@drawable/businessman" />
                 </androidx.cardview.widget.CardView>
                 <TextView
                     android:id="@+id/txt_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Hello, Fajri"
-                    android:textColor="@color/black"
+                    android:text="Hello, Welcome to Prioriti."
+                    android:textColor="@color/primary_text"
                     android:layout_gravity="center"
                     android:layout_margin="8dp"
                     android:textSize="18sp"/>
@@ -49,7 +50,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="4dp"
                 android:padding="8dp">
 
                 <TextView
@@ -57,12 +58,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Oktober 2024"
-                    android:background="@color/white"
+                    android:background="@color/primary_background"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="8dp"
                     android:inputType="none"
-                    android:textColor="@color/black"
+                    android:textColor="@color/primary_text"
                     android:drawableEnd="@drawable/ic_arrow_down"
+                    android:drawableTint="@color/primary_text"
                     android:drawablePadding="10dp"/>
             </RelativeLayout>
 
@@ -70,20 +72,57 @@
                 android:id="@+id/calendarView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="10dp"
+                android:layout_marginVertical="4dp"
                 android:orientation="horizontal"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/date_item" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/taskView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="16dp"
-                android:orientation="vertical"
-                android:nestedScrollingEnabled="false"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/task_item"/>
+<!--            <androidx.cardview.widget.CardView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_marginTop="16dp"-->
+<!--                app:cardElevation="0dp">-->
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/rounded_top_card">
+                    <TextView
+                        android:id="@+id/tvTodayList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="42dp"
+                        android:layout_marginBottom="8dp"
+                        android:text="Today's List"
+                        android:textStyle="bold"
+                        android:textSize="20sp"/>
+
+                    <TextView
+                        android:id="@+id/tvEmptyTask"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/tvTodayList"
+                        android:layout_marginTop="16dp"
+                        android:text="Let’s get started by adding a new task!"
+                        android:visibility="gone"
+                        android:gravity="center"
+                        android:textSize="18sp"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/taskView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@id/tvTodayList"
+                        android:nestedScrollingEnabled="false"
+                        android:orientation="vertical"
+                        android:padding="16dp"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:listitem="@layout/task_item" />
+                </RelativeLayout>
+
+<!--            </androidx.cardview.widget.CardView>-->
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
@@ -93,8 +132,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/fab_add"
+        android:src="@drawable/ic_add"
+        app:tint="@color/third_text"
+        app:backgroundTint="@color/calendar_primary"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:src="@drawable/ic_add"
         android:layout_margin="16dp"/>
 </RelativeLayout>

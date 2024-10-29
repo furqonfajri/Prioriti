@@ -1,23 +1,14 @@
-package com.fajri.prioriti
+package com.fajri.prioriti.ui
 
-import android.annotation.SuppressLint
-import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -25,10 +16,11 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
+import com.fajri.prioriti.alarm.AlarmHandler
+import com.fajri.prioriti.adapter.CalendarAdapter
+import com.fajri.prioriti.data.model.CalendarData
+import com.fajri.prioriti.R
+import com.fajri.prioriti.adapter.TaskAdapter
 import com.fajri.prioriti.data.local.AppDatabase
 import com.fajri.prioriti.data.model.Task
 import com.fajri.prioriti.data.repository.TaskRepository
@@ -40,12 +32,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import java.text.ParseException
-import java.text.ParsePosition
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
 
@@ -53,6 +43,7 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
         private val TAG = "MainActivity"
         private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
     }
+
     private lateinit var binding: ActivityMainBinding
     private lateinit var bottomBinding: BottomSheetAddTaskBinding
 
@@ -130,6 +121,7 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
         val materialDateBuilder: MaterialDatePicker.Builder<Long> =
             MaterialDatePicker.Builder.datePicker()
         materialDateBuilder.setTitleText("Select Date")
+        materialDateBuilder.setTheme(R.style.CustomDatePickerTheme)
         val materialDatePicker = materialDateBuilder.build()
         materialDatePicker.show(supportFragmentManager, "MATERIAL_DATE_PICKER")
         materialDatePicker.addOnPositiveButtonClickListener {
@@ -160,6 +152,7 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
     private fun displayTimePicker() {
         val materialTimeBuilder: MaterialTimePicker.Builder = MaterialTimePicker.Builder()
         materialTimeBuilder.setTitleText("Select Time")
+        materialTimeBuilder.setTheme(R.style.CustomTimePickerTheme)
         val materialTimePicker = materialTimeBuilder.build()
         materialTimePicker.show(supportFragmentManager, "MATERIAL_TIME_PICKER")
 
@@ -205,6 +198,7 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
 
     private fun showBottoSheetDialog() {
         val bottomSheetDialog = BottomSheetDialog(this)
+
         bottomBinding = BottomSheetAddTaskBinding.inflate(layoutInflater)
         bottomSheetDialog.setContentView(bottomBinding.root)
 
@@ -293,39 +287,19 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
         taskViewModel.getTaskByDate(calStart.timeInMillis, calEnd.timeInMillis).observeOnce(this) { tasks ->
             Log.d("TASK LIST", tasks.toString())
             taskAdapter.updateTasks(tasks)
+
+            if (tasks.isEmpty()) {
+                binding.tvEmptyTask.visibility = View.VISIBLE
+                binding.taskView.visibility = View.GONE
+            } else {
+                binding.tvEmptyTask.visibility = View.GONE
+                binding.taskView.visibility = View.VISIBLE
+            }
         }
 
     }
 
-//    @SuppressLint("ScheduleExactAlarm")
     private fun setAlarm(task: Task) {
-//        val workManager = WorkManager.getInstance(this)
-//
-//        val data = workDataOf(
-//            "title" to task.title,
-//            "description" to task.description
-//        )
-//
-//        val notificationWorkRequest = OneTimeWorkRequestBuilder<TaskReminderWorker>()
-//            .setInputData(data)
-//            .setInitialDelay(getDelay(task.timestamp), TimeUnit.MILLISECONDS)
-//            .build()
-//
-//        workManager.enqueue(notificationWorkRequest)
-
-//        val context = this
-//
-//        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-//        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-//
-//        val intent = Intent(context, NotificationReceiver::class.java).apply {
-//            putExtra("title", task.title)
-//            putExtra("description", task.description)
-//        }
-//        val pendingIntent1 = PendingIntent.getBroadcast(context, System.currentTimeMillis().toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-//        val pendingIntent2 = PendingIntent.getBroadcast(context, (System.currentTimeMillis() + 1).toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-//
-//        val alarmTime = task.timestamp
 
         when(task.priority) {
             "Low" -> {
@@ -340,28 +314,6 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
             }
         }
     }
-
-//    private fun getDelay(timestamp: Long): Long {
-//        val currentTime = System.currentTimeMillis()
-//        return if (timestamp > currentTime) {
-//            timestamp - currentTime
-//        } else {
-//            0
-//        }
-//    }
-
-//    private fun createNotificationChannel() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            val channel = NotificationChannel(
-//                "TASK_NOTIFICATION_CHANNEL",
-//                "Task Notifications",
-//                NotificationManager.IMPORTANCE_HIGH
-//            )
-//            val notificationManager = getSystemService(NotificationManager::class.java)
-//            notificationManager.createNotificationChannel(channel)
-//        }
-//    }
-
 
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -378,22 +330,6 @@ class MainActivity : AppCompatActivity(), CalendarAdapter.CalendarInterface {
             }
         }
     }
-
-//    private fun sendNotification(notificationManager: NotificationManager, task: Task) {
-//        val channelId = "TASK_NOTIFICATION_CHANNEL"
-//        val notificationBuilder = NotificationCompat.Builder(this, channelId)
-//            .setSmallIcon(R.drawable.ic_check_circle)
-//            .setContentTitle(task.title)
-//            .setContentText(task.description)
-//            .setPriority(NotificationCompat.PRIORITY_HIGH)
-//
-//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            val channel = NotificationChannel(channelId, "Task Notifications", NotificationManager.IMPORTANCE_HIGH)
-//            notificationManager.createNotificationChannel(channel)
-//        }
-//
-//        notificationManager.notify(task.id, notificationBuilder.build())
-//    }
 
     fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
         observe(lifecycleOwner, object : Observer<T> {

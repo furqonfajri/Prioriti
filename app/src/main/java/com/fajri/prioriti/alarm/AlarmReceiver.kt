@@ -1,4 +1,4 @@
-package com.fajri.prioriti
+package com.fajri.prioriti.alarm
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.fajri.prioriti.R
 
 class AlarmReceiver: BroadcastReceiver() {
 

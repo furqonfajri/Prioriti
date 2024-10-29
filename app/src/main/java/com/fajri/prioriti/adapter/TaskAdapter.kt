@@ -1,11 +1,10 @@
-package com.fajri.prioriti
+package com.fajri.prioriti.adapter
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.fajri.prioriti.data.model.Task
-import com.fajri.prioriti.databinding.DateItemBinding
 import com.fajri.prioriti.databinding.TaskItemBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -23,12 +22,12 @@ class TaskAdapter(private var taskList: List<Task>): RecyclerView.Adapter<TaskAd
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskAdapter.TaskViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val binding = TaskItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return TaskViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: TaskAdapter.TaskViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         holder.bind(taskList[position], position)
     }
 
